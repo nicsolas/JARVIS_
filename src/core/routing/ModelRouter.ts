@@ -1,7 +1,8 @@
 import { TaskDifficulty, TaskRisk, ExecutionRoute, ExecutionRouteType } from '../task/types.js';
 import { DifficultyClassifier, RiskClassifier } from './Classifiers.js';
 import { ToolRegistry } from '../../tools/registry/ToolRegistry.js';
-import { IAIProvider } from '../../ai/interfaces/index.js';
+import { IAIProvider, ModelCapability } from '../../ai/interfaces/index.js';
+import { RoutingError } from '../../errors/index.js';
 
 export class ModelRouter {
   private difficultyClassifier: DifficultyClassifier;
@@ -52,16 +53,16 @@ export class ModelRouter {
     }
 
     // 2. Select AI Provider & Model based on Difficulty
-    const defaultProvider = availableProviders[0] || { id: 'mock-provider', capabilities: [] };
-
     if (difficulty === TaskDifficulty.HIGH || difficulty === TaskDifficulty.COMPLEX) {
+      const selected = this.selectProviderCapability(availableProviders, 'REASONING_CLOUD');
+
       return {
         difficulty,
         risk,
         route: {
           type: ExecutionRouteType.REASONING_CLOUD_MODEL,
-          providerId: defaultProvider.id,
-          modelId: 'mock-reasoning-model',
+          providerId: selected.provider.id,
+          modelId: selected.capability.id,
           reason: `High difficulty task (${difficulty}). Routed to high-capability reasoning model.`,
           estimatedCostTier: 'HIGH',
           estimatedLatencyTier: 'SUB_1S'
@@ -69,18 +70,41 @@ export class ModelRouter {
       };
     }
 
+    const selected = this.selectProviderCapability(availableProviders, 'FAST_CLOUD');
+
     return {
       difficulty,
       risk,
       route: {
         type: ExecutionRouteType.FAST_CLOUD_MODEL,
-        providerId: defaultProvider.id,
-        modelId: 'mock-fast-model',
+        providerId: selected.provider.id,
+        modelId: selected.capability.id,
         reason: `Standard difficulty task (${difficulty}). Routed to lightweight fast model.`,
         estimatedCostTier: 'LOW',
         estimatedLatencyTier: 'SUB_250MS'
       }
     };
+  }
+
+  private selectProviderCapability(
+    availableProviders: IAIProvider[],
+    preferredTier: ModelCapability['tier']
+  ): { provider: IAIProvider; capability: ModelCapability } {
+    for (const provider of availableProviders) {
+      const capability = provider.capabilities.find(model => model.tier === preferredTier);
+      if (capability) {
+        return { provider, capability };
+      }
+    }
+
+    for (const provider of availableProviders) {
+      const capability = provider.capabilities[0];
+      if (capability) {
+        return { provider, capability };
+      }
+    }
+
+    throw new RoutingError(`No AI provider capability is available for tier ${preferredTier}.`);
   }
 
   private matchesToolPattern(input: string, toolId: string): boolean {

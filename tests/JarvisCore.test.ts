@@ -143,6 +143,52 @@ describe('JARVIS Core Milestone 1 Test Suite', () => {
       expect(typeof task.result?.output).toBe('string');
       expect(task.result?.output).toContain('[Mock AI Response');
     });
+
+    it('should select the provider capability that matches the required model tier', async () => {
+      const fastOnlyProvider: MockAIProvider = new MockAIProvider();
+      Object.defineProperty(fastOnlyProvider, 'id', { value: 'fast-only-provider' });
+      Object.defineProperty(fastOnlyProvider, 'capabilities', {
+        value: fastOnlyProvider.capabilities.filter(model => model.tier === 'FAST_CLOUD')
+      });
+
+      const reasoningProvider = new MockAIProvider();
+      Object.defineProperty(reasoningProvider, 'id', { value: 'reasoning-provider' });
+      Object.defineProperty(reasoningProvider, 'capabilities', {
+        value: reasoningProvider.capabilities.filter(model => model.tier === 'REASONING_CLOUD')
+      });
+
+      core = new JarvisCore({
+        modelRouter: new ModelRouter(),
+        approvalEngine,
+        toolRegistry,
+        memoryStore: mockMemoryStore,
+        providers: [fastOnlyProvider, reasoningProvider],
+        logger
+      });
+
+      const task = await core.processRequest('Explain why this Rust program crashes');
+
+      expect(task.route?.providerId).toBe('reasoning-provider');
+      expect(task.route?.modelId).toBe('mock-reasoning-model');
+      expect(task.status).toBe(TaskStatus.COMPLETED);
+    });
+
+    it('should fail routing cleanly when no AI provider capabilities are available', async () => {
+      core = new JarvisCore({
+        modelRouter: new ModelRouter(),
+        approvalEngine,
+        toolRegistry,
+        memoryStore: mockMemoryStore,
+        providers: [],
+        logger
+      });
+
+      const task = await core.processRequest('Summarize project notes');
+
+      expect(task.status).toBe(TaskStatus.FAILED);
+      expect(task.error?.code).toBe('EXECUTION_ERROR');
+      expect(task.error?.message).toContain('No AI provider capability is available');
+    });
   });
 
   describe('5. Tool Registry & Execution Boundaries', () => {
