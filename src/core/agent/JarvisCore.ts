@@ -6,6 +6,8 @@ import { IAIProvider } from '../../ai/interfaces/index.js';
 import { IMemoryStore } from '../../memory/interfaces/index.js';
 import { ILogger } from '../../logging/index.js';
 import { ApprovalRequiredError, CancelledError } from '../../errors/index.js';
+import { EventDispatcher } from '../events/EventDispatcher.js';
+import { StateEngine } from '../state/StateEngine.js';
 
 export interface JarvisCoreOptions {
   modelRouter: ModelRouter;
@@ -14,6 +16,8 @@ export interface JarvisCoreOptions {
   memoryStore: IMemoryStore;
   providers: IAIProvider[];
   logger: ILogger;
+  eventDispatcher?: EventDispatcher;
+  stateEngine?: StateEngine;
 }
 
 export class JarvisCore {
@@ -23,6 +27,8 @@ export class JarvisCore {
   private memoryStore: IMemoryStore;
   private providers: IAIProvider[];
   private logger: ILogger;
+  private eventDispatcher?: EventDispatcher;
+  private stateEngine?: StateEngine;
 
   constructor(options: JarvisCoreOptions) {
     this.router = options.modelRouter;
@@ -31,6 +37,8 @@ export class JarvisCore {
     this.memoryStore = options.memoryStore;
     this.providers = options.providers;
     this.logger = options.logger;
+    this.eventDispatcher = options.eventDispatcher;
+    this.stateEngine = options.stateEngine;
   }
 
   /**
@@ -57,10 +65,13 @@ export class JarvisCore {
     };
 
     this.logger.info('Task received', { taskId, rawInput });
+    await this.eventDispatcher?.emit('task.received', { taskId, rawInput, normalizedIntent });
 
     try {
       // 2. Intent Analysis & Model Routing (evaluates Difficulty & Risk separately)
       task.status = TaskStatus.ANALYZING;
+      await this.stateEngine?.transition('THINKING', `Analyzing task ${taskId}`);
+      await this.eventDispatcher?.emit('task.analyzing', { taskId, normalizedIntent });
       const routeEvaluation = this.router.evaluateRoute(
         normalizedIntent,
         this.toolRegistry,
@@ -70,6 +81,14 @@ export class JarvisCore {
       task.difficulty = routeEvaluation.difficulty;
       task.risk = routeEvaluation.risk;
       task.route = routeEvaluation.route;
+
+      await this.eventDispatcher?.emit('task.routing', {
+        taskId,
+        difficulty: task.difficulty,
+        risk: task.risk,
+        route: task.route,
+        matchedToolId: routeEvaluation.matchedToolId
+      });
 
       this.logger.info('Routing evaluation complete', {
         taskId,
@@ -91,6 +110,12 @@ export class JarvisCore {
 
       if (approvalDecision.requiresApproval) {
         task.status = TaskStatus.WAITING_APPROVAL;
+        await this.stateEngine?.transition('AWAITING_APPROVAL', `Task ${taskId} requires approval`);
+        await this.eventDispatcher?.emit('task.awaiting_approval', {
+          taskId,
+          approvalLevel: approvalDecision.approvalLevel,
+          reason: approvalDecision.reason
+        });
         this.logger.warn('Task requires user approval', {
           taskId,
           approvalLevel: approvalDecision.approvalLevel,
@@ -116,6 +141,8 @@ export class JarvisCore {
 
       // 4. Execution Stage
       task.status = TaskStatus.EXECUTING;
+      await this.stateEngine?.transition('EXECUTING_TOOL', `Executing task ${taskId}`);
+      await this.eventDispatcher?.emit('task.executing', { taskId, route: task.route });
       let executionOutput: unknown;
       const toolCallsExecuted: TaskExecutionResult['toolCallsExecuted'] = [];
 
@@ -147,6 +174,12 @@ export class JarvisCore {
           query: normalizedIntent,
           purpose: 'reasoning'
         });
+        await this.eventDispatcher?.emit('memory.retrieved', {
+          taskId,
+          count: memoryResults.length,
+          activeCount: memoryResults.filter(result => result.active).length,
+          surfacedCount: memoryResults.filter(result => result.surfacable).length
+        });
 
         const activeProvider = this.providers.find(p => p.id === task.route?.providerId) || this.providers[0];
 
@@ -176,6 +209,8 @@ export class JarvisCore {
         executionDurationMs
       };
 
+      await this.stateEngine?.reset(`Task ${taskId} completed`);
+      await this.eventDispatcher?.emit('task.completed', { taskId, executionDurationMs, result: task.result });
       this.logger.info('Task completed successfully', { taskId, executionDurationMs });
       return task;
 
@@ -189,6 +224,8 @@ export class JarvisCore {
           message
         };
       }
+      await this.stateEngine?.transition(task.status === TaskStatus.CANCELLED ? 'IDLE' : 'ERROR', task.error?.message ?? 'Task execution failed');
+      await this.eventDispatcher?.emit(task.status === TaskStatus.CANCELLED ? 'task.cancelled' : 'task.failed', { taskId, error: task.error });
       this.logger.error('Task execution failed', { taskId, error: task.error });
       return task;
     }

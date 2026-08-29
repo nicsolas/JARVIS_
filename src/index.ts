@@ -4,6 +4,8 @@ export * from './core/agent/JarvisCore.js';
 export * from './core/routing/Classifiers.js';
 export * from './core/routing/ModelRouter.js';
 export * from './core/approvals/ApprovalEngine.js';
+export * from './core/events/index.js';
+export * from './core/state/index.js';
 
 // AI Subsystem
 export * from './ai/interfaces/index.js';
@@ -11,7 +13,7 @@ export * from './ai/providers/MockAIProvider.js';
 
 // Memory Subsystem
 export * from './memory/interfaces/index.js';
-export * from './memory/store/MockMemoryStore.js';
+export * from './memory/index.js';
 
 // Tools Subsystem
 export * from './tools/interfaces/index.js';

@@ -16,11 +16,13 @@
 │   ├── logging/            # Structured logger with secret sanitization
 │   ├── core/               # Core Orchestrator, Task Models, Routing & Approvals
 │   │   ├── agent/          # JarvisCore execution pipeline
+│   │   ├── events/         # Typed EventDispatcher for kernel lifecycle signals
+│   │   ├── state/          # Runtime StateEngine for visualizer/client state
 │   │   ├── task/           # Task model, enums (TaskDifficulty, TaskRisk, TaskStatus)
 │   │   ├── routing/        # Difficulty/Risk classifiers and ModelRouter
 │   │   └── approvals/      # Risk policy & ApprovalEngine
 │   ├── ai/                 # IAIProvider interface & MockAIProvider
-│   ├── memory/             # IMemoryStore interface & MockMemoryStore
+│   ├── memory/             # IMemoryStore, VectorMemoryStore, scoring, embeddings
 │   ├── tools/              # ToolRegistry, ITool interface & SafeMockTools
 │   ├── voice/              # Voice pipeline interfaces
 │   └── calling/            # In-app VoIP calling engine interfaces
@@ -48,3 +50,11 @@ No paid API keys are required to execute the test suite. All tests run locally u
 ```bash
 npm test
 ```
+
+### 2.4 Run the Local CLI Harness
+```bash
+npm run build
+npm run cli -- "Open Spotify"
+```
+
+The CLI uses mock providers and the local vector memory store, so it is safe for merge verification without API keys.
