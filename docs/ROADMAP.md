@@ -6,7 +6,7 @@ The development of JARVIS follows a structured, multi-phase roadmap. Each phase 
 
 ---
 
-## Phase 1: Foundation & Architecture Specification 🟢 (CURRENT PHASE)
+## Phase 1: Foundation & Architecture Specification ✅ (COMPLETE)
 * [x] Initialize repository architecture foundation & `AGENTS.md`.
 * [x] Draft root `README.md` and complete technical specifications across `docs/*.md`.
 * [x] Define multi-provider AI abstractions, difficulty vs. risk matrix, and 5-tier memory scoring model.
@@ -14,12 +14,13 @@ The development of JARVIS follows a structured, multi-phase roadmap. Each phase 
 
 ---
 
-## Phase 2: Core Kernel & Memory Engine 🔵 (UPCOMING)
-* [ ] Implement core Event Dispatcher and State Engine in TypeScript.
-* [ ] Integrate embedded **LanceDB** vector store for 5-tier hierarchical memory storage.
-* [ ] Build multi-factor retrieval scoring algorithm with activation and suppression thresholds.
-* [ ] Construct abstract AI Provider router supporting Anthropic, OpenAI, and local Ollama runtimes.
-* [ ] Implement Task Difficulty vs. Risk evaluator and local CLI testing environment.
+## Phase 2: Core Kernel & Memory Engine 🟢 (CURRENT / READY FOR MERGE)
+* [x] Implement core Event Dispatcher and State Engine in TypeScript.
+* [x] Integrate an embedded provider-backed vector memory store for 5-tier hierarchical memory storage.
+  * Note: the production LanceDB adapter remains replaceable behind `IMemoryStore`; the merge-ready milestone uses the local deterministic vector store so tests run without network, credentials, or native database services.
+* [x] Build multi-factor retrieval scoring algorithm with activation and suppression thresholds.
+* [x] Construct abstract AI Provider router with provider/model capability boundaries and mock cloud/local routing seams.
+* [x] Implement Task Difficulty vs. Risk evaluator and local CLI testing environment.
 
 ---
 

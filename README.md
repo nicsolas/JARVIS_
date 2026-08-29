@@ -6,7 +6,7 @@
 
 ## Overview
 
-JARVIS is built from the ground up to be a **true personal assistant**, not a generic multi-tenant AI chatbot or SaaS wrapper. It combines hierarchical semantic vector memory, dynamic model routing (evaluating task difficulty vs. risk), modular tool execution with explicit approval flows, replaceable AI/Voice providers, and a minimal cinematic dark user interface across desktop and mobile.
+JARVIS is built from the ground up to be a **true personal assistant**, not a generic multi-tenant AI chatbot or SaaS wrapper. It combines hierarchical semantic vector memory, a typed core event/state kernel, dynamic model routing (evaluating task difficulty vs. risk), modular tool execution with explicit approval flows, replaceable AI/Voice providers, and a minimal cinematic dark user interface across desktop and mobile.
 
 ---
 
@@ -53,8 +53,8 @@ The complete system architecture, design specifications, and operational models 
 │                            JARVIS Orchestrator                              │
 │                                                                             │
 │  ┌─────────────────┐       ┌─────────────────┐       ┌──────────────────┐  │
-│  │  Voice Subsystem│       │ Dynamic Router  │       │  Approval Engine │  │
-│  │  (STT/TTS/Call) │       │ Difficulty/Risk │       │   (Risk & Auth)  │  │
+│  │ Event/State Core│       │ Dynamic Router  │       │  Approval Engine │  │
+│  │ Lifecycle + HUD │       │ Difficulty/Risk │       │   (Risk & Auth)  │  │
 │  └────────┬────────┘       └────────┬────────┘       └────────┬─────────┘  │
 │           │                         │                         │            │
 │           └─────────────────────────┼─────────────────────────┘            │
@@ -79,9 +79,10 @@ The complete system architecture, design specifications, and operational models 
 ## Key Principles
 
 1. **Private Single-User**: Built exclusively for one user. No multi-tenant complexity or SaaS friction.
-2. **Semantic Vector Memory**: Memory uses embeddings and semantic retrieval, with contextual activation and strict suppression thresholds so old or irrelevant facts are not improperly exposed.
-3. **Difficulty vs. Risk Routing**: Simple tasks bypass LLMs or use cheap local models; risky tasks require explicit user authorization regardless of model size.
-4. **Clean Replaceability**: All key dependencies (LLM, STT, TTS, Vector Store, Desktop Shell) are hidden behind abstract interfaces.
+2. **Core Kernel Lifecycle**: Typed event dispatch and runtime state transitions expose task lifecycle changes to future desktop/mobile clients without coupling UI concerns to execution logic.
+3. **Semantic Vector Memory**: Memory uses embeddings and semantic retrieval, with contextual activation and strict suppression thresholds so old or irrelevant facts are not improperly exposed.
+4. **Difficulty vs. Risk Routing**: Simple tasks bypass LLMs or use cheap local models; risky tasks require explicit user authorization regardless of model size.
+5. **Clean Replaceability**: All key dependencies (LLM, STT, TTS, Vector Store, Desktop Shell) are hidden behind abstract interfaces.
 
 ---
 
