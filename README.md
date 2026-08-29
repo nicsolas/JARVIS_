@@ -35,7 +35,20 @@ The complete system architecture, design specifications, and operational models 
 * **[SECURITY.md](./docs/SECURITY.md)** — Zero-secret policy, local credential keychains, sandbox boundaries, and threat model.
 * **[PRIVACY.md](./docs/PRIVACY.md)** — Local-first principles, private single-user data isolation, telemetry policy, and cloud minimization.
 * **[DEVELOPMENT.md](./docs/DEVELOPMENT.md)** — Project structure, tooling setup, markdown linting, and development workflow.
-* **[ROADMAP.md](./docs/ROADMAP.md)** — Phased implementation roadmap from initial foundation to in-app voice calling and local AI deployment.
+* **[ROADMAP.md](./docs/ROADMAP.md)** — 20-milestone implementation roadmap from Core Runtime through Autonomous Mode, including dependencies and exit criteria.
+
+---
+
+## Implementation Roadmap
+
+JARVIS now follows a dependency-driven **M1–M20 milestone plan**:
+
+* **M1–M4** establish the core runtime, vector memory, provider abstraction, and intelligent model routing.
+* **M5–M8** add multi-agent orchestration, budgets, recovery, and parallel execution.
+* **M9–M14** deliver controlled tools plus desktop, mobile, voice, calling, and cinematic interface layers.
+* **M15–M20** introduce long-term personal intelligence, autonomous workspaces, external/distributed agents, security hardening, and autonomous mode.
+
+See **[ROADMAP.md](./docs/ROADMAP.md)** for the full milestone table, dependency graph, and exit criteria.
 
 ---
 

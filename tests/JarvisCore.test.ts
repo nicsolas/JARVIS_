@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { JARVIS_MILESTONES, createMilestoneBuildPlan, getBlockedBy, getDependents } from '../src/index.js';
+
 import {
   JarvisCore,
   TaskDifficulty,
@@ -186,5 +188,30 @@ describe('JARVIS Core Milestone 1 Test Suite', () => {
 
       expect(surfacingResults).toHaveLength(0);
     });
+  });
+});
+
+describe('JARVIS Milestone Roadmap', () => {
+  it('defines all 20 milestones in dependency order', () => {
+    expect(JARVIS_MILESTONES).toHaveLength(20);
+    expect(JARVIS_MILESTONES[0].id).toBe('M1');
+    expect(JARVIS_MILESTONES[19].id).toBe('M20');
+    expect(getBlockedBy('M8')).toEqual(['M6', 'M7']);
+    expect(getBlockedBy('M20')).toEqual(['M16', 'M18', 'M19']);
+  });
+
+  it('exposes downstream dependents for orchestration planning', () => {
+    expect(getDependents('M1')).toEqual(expect.arrayContaining(['M2', 'M3', 'M9', 'M10', 'M11', 'M12', 'M13', 'M14']));
+    expect(getDependents('M16')).toEqual(expect.arrayContaining(['M17', 'M20']));
+  });
+
+  it('creates an executable milestone-by-milestone build plan', () => {
+    const plan = createMilestoneBuildPlan();
+
+    expect(plan.completed).toEqual(['M1']);
+    expect(plan.nextBuildable).toEqual(expect.arrayContaining(['M2', 'M3', 'M9']));
+    expect(plan.blocked).toEqual(expect.arrayContaining(['M4', 'M5', 'M8', 'M20']));
+    expect(plan.steps.find(step => step.id === 'M2')?.isBuildable).toBe(true);
+    expect(plan.steps.find(step => step.id === 'M20')?.blockedBy).toEqual(['M16', 'M18', 'M19']);
   });
 });
