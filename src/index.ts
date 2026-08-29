@@ -26,3 +26,6 @@ export * from './calling/interfaces/index.js';
 export * from './errors/index.js';
 export * from './logging/index.js';
 export * from './config/index.js';
+
+// Product Roadmap
+export * from './roadmap/milestones.js';
