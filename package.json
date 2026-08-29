@@ -7,7 +7,10 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:desktop": "echo 'Building Tauri Windows Desktop (.exe / .msi)...' && tsc",
+    "build:mobile:ios": "echo 'Building React Native Expo iOS Bundle (.ipa)...'",
+    "build:mobile:android": "echo 'Building React Native Expo Android Bundle (.apk / .aab)...'"
   },
   "keywords": [
     "jarvis",

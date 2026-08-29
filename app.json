@@ -1,0 +1,44 @@
+{
+  "name": "jarvis-mobile",
+  "slug": "jarvis-mobile",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "icon": "./assets/icon.png",
+  "userInterfaceStyle": "dark",
+  "splash": {
+    "image": "./assets/splash.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#0A0A0C"
+  },
+  "ios": {
+    "supportsTablet": true,
+    "bundleIdentifier": "com.jarvis.mobile",
+    "infoPlist": {
+      "NSMicrophoneUsageDescription": "JARVIS requires microphone access for real-time voice interaction and audio calls.",
+      "UIBackgroundModes": ["audio", "fetch", "remote-notification"]
+    }
+  },
+  "android": {
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/adaptive-icon.png",
+      "backgroundColor": "#0A0A0C"
+    },
+    "package": "com.jarvis.mobile",
+    "permissions": [
+      "RECORD_AUDIO",
+      "MODIFY_AUDIO_SETTINGS",
+      "INTERNET",
+      "ACCESS_NETWORK_STATE",
+      "WAKE_LOCK"
+    ]
+  },
+  "plugins": [
+    [
+      "@config-plugins/react-native-webrtc",
+      {
+        "cameraPermission": "Allow JARVIS to access camera for video calls.",
+        "microphonePermission": "Allow JARVIS to access microphone for VoIP calling and voice commands."
+      }
+    ]
+  ]
+}
